@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Moon DNS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold-100: #FFF8E1;
+      --gold-200: #FFE082;
+      --gold-300: #FFD740;
+      --gold-400: #FFC400;
+      --gold-500: #D4A017;
+      --gold-600: #B8860B;
+      --gold-700: #8B6914;
+      --black-0: #000000;
+      --black-100: #0A0A0A;
+      --black-200: #111111;
+      --black-300: #181818;
+      --black-400: #222222;
+      --black-500: #2E2E2E;
+      --black-600: #3A3A3A;
+      --text-main: #F5F0E0;
+      --text-muted: #9E9080;
+      --font: 'Vazirmatn', sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black-100);
+      color: var(--text-main);
+      font-family: var(--font);
+      font-size: 16px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ─── SCROLLBAR ─── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--black-200); }
+    ::-webkit-scrollbar-thumb { background: var(--gold-600); border-radius: 3px; }
+
+    /* ─── NOISE OVERLAY ─── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed; top: 0; width: 100%; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.1rem 4rem;
+      background: rgba(10, 10, 10, 0.85);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(212, 160, 23, 0.15);
+    }
+
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 1.15rem; font-weight: 700; letter-spacing: 0.04em;
+      color: var(--gold-300);
+      text-decoration: none;
+    }
+
+    .nav-logo svg { width: 32px; height: 32px; }
+
+    .nav-links {
+      display: flex; gap: 2.5rem; list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 400;
+      letter-spacing: 0.03em;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--gold-300); }
+
+    .nav-cta {
+      background: transparent;
+      border: 1px solid var(--gold-600);
+      color: var(--gold-300);
+      padding: 0.5rem 1.4rem;
+      border-radius: 6px;
+      font-family: var(--font);
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.03em;
+    }
+
+    .nav-cta:hover {
+      background: var(--gold-600);
+      color: var(--black-100);
+    }
+
+    /* ─── HERO ─── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 8rem 2rem 4rem;
+      position: relative;
+    }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(212, 160, 23, 0.08);
+      border: 1px solid rgba(212, 160, 23, 0.25);
+      color: var(--gold-400);
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      padding: 0.4rem 1rem;
+      border-radius: 100px;
+      margin-bottom: 2rem;
+      text-transform: uppercase;
+    }
+
+    .hero-badge span { display: inline-block; width: 6px; height: 6px; background: var(--gold-400); border-radius: 50%; animation: pulse 2s infinite; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    h1.hero-title {
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+      max-width: 900px;
+    }
+
+    .hero-title .gold { color: var(--gold-400); }
+
+    .hero-sub {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 560px;
+      line-height: 1.8;
+      margin-bottom: 3rem;
+      font-weight: 300;
+    }
+
+    .hero-actions {
+      display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+    }
+
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--gold-500);
+      color: var(--black-100);
+      padding: 0.85rem 2rem;
+      border-radius: 8px;
+      font-family: var(--font);
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-decoration: none;
+      border: none; cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.02em;
+    }
+
+    .btn-primary:hover {
+      background: var(--gold-300);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: transparent;
+      border: 1px solid var(--black-600);
+      color: var(--text-main);
+      padding: 0.85rem 2rem;
+      border-radius: 8px;
+      font-family: var(--font);
+      font-size: 0.95rem;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.02em;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--gold-700);
+      color: var(--gold-200);
+      transform: translateY(-2px);
+    }
+
+    /* ─── HERO TERMINAL ─── */
+    .hero-terminal {
+      margin-top: 4rem;
+      background: var(--black-300);
+      border: 1px solid var(--black-600);
+      border-radius: 12px;
+      width: min(640px, 90vw);
+      overflow: hidden;
+    }
+
+    .terminal-bar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 0.75rem 1rem;
+      background: var(--black-400);
+      border-bottom: 1px solid var(--black-600);
+    }
+
+    .t-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .t-r { background: #FF5F57; }
+    .t-y { background: #FEBC2E; }
+    .t-g { background: #28C840; }
+
+    .terminal-title {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin: auto;
+    }
+
+    .terminal-body {
+      padding: 1.5rem;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      line-height: 2;
+      text-align: left;
+    }
+
+    .t-prompt { color: var(--gold-500); }
+    .t-cmd { color: var(--text-main); }
+    .t-out { color: #4ADE80; }
+    .t-comment { color: var(--text-muted); }
+
+    .t-cursor {
+      display: inline-block; width: 8px; height: 16px;
+      background: var(--gold-400);
+      vertical-align: middle;
+      animation: blink 1.2s step-end infinite;
+    }
+
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+    /* ─── STATS BAR ─── */
+    .stats-bar {
+      border-top: 1px solid var(--black-500);
+      border-bottom: 1px solid var(--black-500);
+      background: var(--black-200);
+      display: flex; justify-content: center;
+      padding: 2.5rem 4rem;
+      gap: 4rem; flex-wrap: wrap;
+    }
+
+    .stat-item { text-align: center; }
+
+    .stat-num {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--gold-400);
+      letter-spacing: -0.02em;
+      display: block;
+      line-height: 1.1;
+    }
+
+    .stat-label {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* ─── SECTION ─── */
+    section { padding: 6rem 2rem; position: relative; }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-eyebrow {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold-500);
+      margin-bottom: 1rem;
+    }
+
+    h2.section-title {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+    }
+
+    .section-lead {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 520px;
+      line-height: 1.8;
+    }
+
+    /* ─── FEATURES GRID ─── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5px;
+      margin-top: 4rem;
+      border: 1.5px solid var(--black-500);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .feature-card {
+      background: var(--black-200);
+      padding: 2.2rem 2rem;
+      transition: background 0.2s;
+      position: relative;
+    }
+
+    .feature-card:hover { background: var(--black-300); }
+
+    .feature-icon {
+      width: 44px; height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(212, 160, 23, 0.1);
+      border: 1px solid rgba(212, 160, 23, 0.2);
+      border-radius: 10px;
+      margin-bottom: 1.2rem;
+    }
+
+    .feature-icon svg { width: 22px; height: 22px; stroke: var(--gold-400); fill: none; stroke-width: 1.8; }
+
+    .feature-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--text-main);
+    }
+
+    .feature-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    /* ─── DNS SERVERS ─── */
+    .dns-section { background: var(--black-200); }
+
+    .dns-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-top: 3rem;
+    }
+
+    .dns-card {
+      background: var(--black-300);
+      border: 1px solid var(--black-500);
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .dns-card:hover {
+      border-color: rgba(212, 160, 23, 0.4);
+      background: var(--black-400);
+      transform: translateY(-3px);
+    }
+
+    .dns-logo {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 0.8rem;
+    }
+
+    .dns-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+    }
+
+    .dns-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .dns-ips {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.9;
+    }
+
+    .dns-tag {
+      display: inline-block;
+      margin-top: 0.8rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 100px;
+    }
+
+    .dns-tag.speed { background: rgba(74, 222, 128, 0.1); color: #4ADE80; }
+    .dns-tag.privacy { background: rgba(212, 160, 23, 0.1); color: var(--gold-400); }
+    .dns-tag.security { background: rgba(96, 165, 250, 0.1); color: #60A5FA; }
+    .dns-tag.family { background: rgba(167, 139, 250, 0.1); color: #A78BFA; }
+
+    /* ─── HOW IT WORKS ─── */
+    .steps { margin-top: 4rem; display: flex; flex-direction: column; gap: 0; }
+
+    .step {
+      display: flex; gap: 3rem; align-items: flex-start;
+      padding: 2.5rem 0;
+      border-bottom: 1px solid var(--black-500);
+      position: relative;
+    }
+
+    .step:last-child { border-bottom: none; }
+
+    .step-num {
+      font-family: var(--mono);
+      font-size: 3rem;
+      font-weight: 700;
+      color: rgba(212, 160, 23, 0.15);
+      line-height: 1;
+      min-width: 80px;
+      letter-spacing: -0.04em;
+    }
+
+    .step-content { flex: 1; }
+
+    .step-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .step-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.8;
+    }
+
+    /* ─── PLATFORM BADGES ─── */
+    .platforms {
+      display: flex; gap: 0.8rem; flex-wrap: wrap; margin-top: 3rem;
+    }
+
+    .platform-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--black-300);
+      border: 1px solid var(--black-600);
+      padding: 0.6rem 1.1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-main);
+      transition: all 0.2s;
+    }
+
+    .platform-badge svg { width: 18px; height: 18px; fill: var(--text-muted); }
+    .platform-badge:hover { border-color: var(--gold-700); color: var(--gold-200); }
+
+    /* ─── DOWNLOAD ─── */
+    .download-section {
+      background: linear-gradient(135deg, var(--black-300) 0%, var(--black-200) 100%);
+      border-top: 1px solid var(--black-500);
+      border-bottom: 1px solid var(--black-500);
+    }
+
+    .download-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 2rem; flex-wrap: wrap;
+    }
+
+    .download-text h2 { margin-bottom: 0.5rem; }
+
+    .download-actions {
+      display: flex; gap: 1rem; flex-wrap: wrap;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--black-100);
+      border-top: 1px solid var(--black-500);
+      padding: 3rem 4rem;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 1.5rem;
+    }
+
+    .footer-logo {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--gold-300);
+    }
+
+    .footer-links {
+      display: flex; gap: 2rem; list-style: none;
+    }
+
+    .footer-links a {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover { color: var(--gold-300); }
+
+    .footer-copy {
+      font-size: 0.8rem;
+      color: var(--black-600);
+    }
+
+    /* ─── GLOW ACCENT ─── */
+    .glow-accent {
+      position: absolute;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(212, 160, 23, 0.06) 0%, transparent 70%);
+      pointer-events: none;
+      top: -150px; left: 50%; transform: translateX(-50%);
+      border-radius: 50%;
+    }
+
+    /* ─── DIVIDER LINE ─── */
+    .gold-line {
+      width: 48px; height: 3px;
+      background: var(--gold-500);
+      border-radius: 2px;
+      margin: 1.5rem 0;
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      section { padding: 4rem 1.5rem; }
+      footer { padding: 2rem 1.5rem; flex-direction: column; text-align: center; }
+      .stats-bar { padding: 2rem 1.5rem; gap: 2rem; }
+      .download-inner { flex-direction: column; text-align: center; }
+      .download-actions { justify-content: center; }
+      .step { flex-direction: column; gap: 1rem; }
+      .step-num { font-size: 2rem; min-width: auto; }
+    }
+  </style>
+
+<style>
+* { -webkit-user-select: none !important; -moz-user-select: none !important; -ms-user-select: none !important; user-select: none !important; }
+</style>
+</head>
+<body>
+<script>
+// Disable right-click
+document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
+// Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'F12') { e.preventDefault(); return false; }
+  if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) { e.preventDefault(); return false; }
+  if (e.ctrlKey && e.key === 'u') { e.preventDefault(); return false; }
+  if (e.ctrlKey && e.key === 's') { e.preventDefault(); return false; }
+});
+// Detect DevTools open
+(function() {
+  var threshold = 160;
+  setInterval(function() {
+    if (window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold) {
+      document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0A0A0A;color:#D4A017;font-family:sans-serif;font-size:1.5rem;">🌙 Moon DNS — دسترسی مجاز نیست</div>';
+    }
+  }, 500);
+})();
+// Disable text selection
+document.addEventListener('selectstart', function(e) { e.preventDefault(); return false; });
+// Disable drag
+document.addEventListener('dragstart', function(e) { e.preventDefault(); return false; });
+</script>
+
+
+<!-- ─── NAV ─── -->
+<nav>
+  <a class="nav-logo" href="#">
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="16" cy="16" r="14" stroke="#D4A017" stroke-width="1.5"/>
+      <path d="M8 16 Q16 6 24 16 Q16 26 8 16Z" fill="rgba(212,160,23,0.2)" stroke="#D4A017" stroke-width="1.2"/>
+      <circle cx="16" cy="16" r="3" fill="#D4A017"/>
+    </svg>
+    🌙 Moon DNS
+  </a>
+  <ul class="nav-links">
+    <li><a href="#features">امکانات</a></li>
+    <li><a href="#servers">سرورها</a></li>
+    <li><a href="#howto">راهنما</a></li>
+    <li><a href="#download">دانلود</a></li>
+  </ul>
+  <button class="nav-cta" onclick="document.getElementById('download').scrollIntoView({behavior:'smooth'})">دانلود رایگان</button>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section class="hero">
+  <div class="glow-accent"></div>
+
+  <div class="hero-badge">
+    <span></span>
+    نسخه ۱ — رایگان
+  </div>
+
+  <h1 class="hero-title">
+    سریع‌ترین <span class="gold">DNS</span><br/>در یک کلیک
+  </h1>
+
+  <p class="hero-sub">
+    تغییر DNS بدون پیچیدگی. متصل بمان، امنیت داشته باش،
+    و با بهترین سرورهای دنیا سرعت اینترنتت را چند برابر کن.
+  </p>
+
+  <div class="hero-actions">
+    <a href="https://up.20script.ir/do.php?filename=29b9-MoonDNS.exe" class="btn-primary" target="_blank">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+      </svg>
+      دانلود برای ویندوز
+    </a>
+
+  </div>
+
+  <div class="hero-terminal">
+    <div class="terminal-bar">
+      <div class="t-dot t-r"></div>
+      <div class="t-dot t-y"></div>
+      <div class="t-dot t-g"></div>
+      <span class="terminal-title">Moon DNS</span>
+    </div>
+    <div class="terminal-body">
+      <div><span class="t-prompt">user@pc</span><span class="t-comment"> ~ </span><span class="t-cmd">Moon DNS --list</span></div>
+      <div class="t-comment"># دریافت لیست سرورهای موجود...</div>
+      <div class="t-out">✔  Cloudflare   1.1.1.1 / 1.0.0.1</div>
+      <div class="t-out">✔  Google       8.8.8.8 / 8.8.4.4</div>
+      <div class="t-out">✔  Shecan       178.22.122.100</div>
+      <div class="t-out">✔  Radar        10.202.10.10</div>
+      <div><span class="t-prompt">user@pc</span><span class="t-comment"> ~ </span><span class="t-cmd">Moon DNS --set cloudflare</span></div>
+      <div class="t-out">✔  DNS با موفقیت تغییر کرد<span class="t-cursor"></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── STATS ─── -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <span class="stat-num">+۱۰</span>
+    <span class="stat-label">سرور DNS</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">۱</span>
+    <span class="stat-label">پلتفرم پشتیبانی</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">۱۰۰٪</span>
+    <span class="stat-label">امنیت</span>
+  </div>
+</div>
+
+<!-- ─── FEATURES ─── -->
+<section id="features">
+  <div class="container">
+    <span class="section-eyebrow">امکانات</span>
+    <h2 class="section-title">همه چیز که نیاز داری</h2>
+    <p class="section-lead">از تست سرعت تا DNS سفارشی — Moon DNS همه چیز را در یک رابط ساده جمع کرده.</p>
+    <div class="gold-line"></div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        </div>
+        <div class="feature-title">تغییر آنی DNS</div>
+        <p class="feature-desc">در کمتر از یک ثانیه DNS سیستمت را تغییر بده — بدون ریستارت، بدون پیچیدگی.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        </div>
+        <div class="feature-title">تست تأخیر (Ping)</div>
+        <p class="feature-desc">قبل از اتصال، سرعت و تأخیر هر سرور DNS را مستقیم از نرم‌افزار بسنج.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="feature-title">DNS فیلترشده</div>
+        <p class="feature-desc">از سرورهای DNS با قابلیت بلاک تبلیغات و محتوای مضر بهره‌مند شو.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+        </div>
+        <div class="feature-title">DNS سفارشی</div>
+        <p class="feature-desc">آدرس DNS دلخواه خودت را اضافه و ذخیره کن — برای همیشه در لیستت می‌ماند.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <div class="feature-title">رابط کاربری تاریک</div>
+        <p class="feature-desc">طراحی شیک با تم تاریک که چشم را خسته نمی‌کند — مخصوص جلسات طولانی.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </div>
+        <div class="feature-title">چنل ما در تلگرام</div>
+        <p class="feature-desc"><a href="https://t.me/Hawk_Service" target="_blank" style="color:var(--gold-400);text-decoration:none;">@Hawk_Service</a><br/>از تست سرعت تا DNS سفارشی — Moon DNS همه چیز را در یک رابط ساده جمع کرده.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── DNS SERVERS ─── -->
+<section id="servers" class="dns-section">
+  <div class="container">
+    <span class="section-eyebrow">سرورها</span>
+    <h2 class="section-title">سرورهای پیش‌فرض</h2>
+    <p class="section-lead">بهترین سرورهای DNS جهان آماده انتخاب هستند.</p>
+    <div class="gold-line"></div>
+
+    <div class="dns-grid">
+      <div class="dns-card">
+        <div class="dns-logo">
+          <div class="dns-dot" style="background:#F48024;"></div>
+          <span class="dns-name">Cloudflare</span>
+        </div>
+        <div class="dns-ips">1.1.1.1<br/>1.0.0.1</div>
+        <span class="dns-tag speed">سریع‌ترین</span>
+      </div>
+
+      <div class="dns-card">
+        <div class="dns-logo">
+          <div class="dns-dot" style="background:#4285F4;"></div>
+          <span class="dns-name">Google</span>
+        </div>
+        <div class="dns-ips">8.8.8.8<br/>8.8.4.4</div>
+        <span class="dns-tag security">پایدار</span>
+      </div>
+
+      <div class="dns-card">
+        <div class="dns-logo">
+          <div class="dns-dot" style="background:#00ADEF;"></div>
+          <span class="dns-name">Shecan</span>
+        </div>
+        <div class="dns-ips">178.22.122.100<br/>185.51.200.2</div>
+        <span class="dns-tag privacy">ایرانی</span>
+      </div>
+
+      <div class="dns-card">
+        <div class="dns-logo">
+          <div class="dns-dot" style="background:#FF4088;"></div>
+          <span class="dns-name">Radar</span>
+        </div>
+        <div class="dns-ips">10.202.10.10<br/>10.202.10.11</div>
+        <span class="dns-tag privacy">ایرانی</span>
+      </div>
+
+      <div class="dns-card">
+        <div class="dns-logo">
+          <div class="dns-dot" style="background:#8B5CF6;"></div>
+          <span class="dns-name">OpenDNS</span>
+        </div>
+        <div class="dns-ips">208.67.222.222<br/>208.67.220.220</div>
+        <span class="dns-tag family">خانوادگی</span>
+      </div>
+
+      <div class="dns-card">
+        <div class="dns-logo">
+          <div class="dns-dot" style="background:#06B6D4;"></div>
+          <span class="dns-name">AdGuard</span>
+        </div>
+        <div class="dns-ips">94.140.14.14<br/>94.140.15.15</div>
+        <span class="dns-tag security">بدون تبلیغ</span>
+      </div>
+
+      <div class="dns-card">
+        <div class="dns-logo">
+          <div class="dns-dot" style="background:#22C55E;"></div>
+          <span class="dns-name">Quad9</span>
+        </div>
+        <div class="dns-ips">9.9.9.9<br/>149.112.112.112</div>
+        <span class="dns-tag security">امن</span>
+      </div>
+
+      <div class="dns-card">
+        <div class="dns-logo">
+          <div class="dns-dot" style="background:#F59E0B;"></div>
+          <span class="dns-name">سفارشی</span>
+        </div>
+        <div class="dns-ips">DNS دلخواه خودت<br/>را اضافه کن</div>
+        <span class="dns-tag privacy">+ افزودن</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── HOW IT WORKS ─── -->
+<section id="howto">
+  <div class="container">
+    <span class="section-eyebrow">راهنما</span>
+    <h2 class="section-title">سه قدم تا DNS بهتر</h2>
+    <div class="gold-line"></div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-content">
+          <div class="step-title">نرم‌افزار را دانلود کن</div>
+          <p class="step-desc">فایل نصب را برای سیستم عامل خودت (ویندوز) دانلود کن. هیچ چیز اضافه‌ای نیاز نیست — نه دات‌نت، نه VC++ Redistributable.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-content">
+          <div class="step-title">سرور DNS مورد نظرت را انتخاب کن</div>
+          <p class="step-desc">از لیست بیش از ۱۰ سرور DNS آماده انتخاب کن، یا آدرس دلخواهت را وارد کن. قبل از انتخاب می‌توانی پینگ هر سرور را بسنجی.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-content">
+          <div class="step-title">اعمال کن — همین!</div>
+          <p class="step-desc">روی «اعمال» بزن و DNS سیستمت در لحظه عوض می‌شه. برای برگشت هم کافیه روی «پیش‌فرض» کلیک کنی.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── DOWNLOAD ─── -->
+<section id="download" class="download-section">
+  <div class="container">
+    <div class="download-inner">
+      <div class="download-text">
+        <span class="section-eyebrow">دانلود</span>
+        <h2 class="section-title">فقط برای ویندوز</h2>
+        <p class="section-lead" style="max-width:420px;">نسخه ۱ — رایگان، بدون تبلیغ</p>
+
+        <div class="platforms" style="margin-top:2rem;">
+          <a class="platform-badge" href="https://up.20script.ir/do.php?filename=f2c8-mysetup.exe" target="_blank">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 12l9-9 9 9v9H3z"/></svg>
+            ویندوز (.exe)
+          </a>
+        </div>
+      </div>
+
+      <div class="download-actions" style="flex-direction:column; align-items:flex-start; gap:1rem;">
+        <a href="https://up.20script.ir/do.php?filename=f2c8-mysetup.exe" class="btn-primary" target="_blank">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+          </svg>
+          دانلود آخرین نسخه
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <div class="footer-logo">🌙 Moon DNS</div>
+  <ul class="footer-links">
+    <li><a href="https://t.me/Hawk_Service" target="_blank">@Hawk_Service</a></li>
+  </ul>
+  <span class="footer-copy">Developed by @EmirGolkar</span>
+</footer>
+
+<script>
+  // Scroll-triggered reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.feature-card, .dns-card, .step').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+    observer.observe(el);
+  });
+
+  // Active nav link
+  const sections = document.querySelectorAll('section[id]');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 120) current = s.id;
+    });
+    document.querySelectorAll('.nav-links a').forEach(a => {
+      a.style.color = a.getAttribute('href') === '#' + current ? 'var(--gold-300)' : '';
+    });
+  });
+</script>
+</body>
+</html>
